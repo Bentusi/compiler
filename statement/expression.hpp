@@ -4,7 +4,32 @@
 #include <map>
 
 using namespace std;
-class expr;
+class env;
+
+/**********************************************************/
+/**/
+/**********************************************************/
+class expr
+{
+private:
+    /* data */
+public:
+    expr(/* args */);
+    ~expr();
+
+    virtual expr* reduce(env *) = 0;
+    virtual bool  reduceable() = 0;
+    virtual void  to_s() = 0;
+};
+
+expr::expr(/* args */)
+{
+}
+
+expr::~expr()
+{
+}
+
 /**********************************************************/
 /**/
 /**********************************************************/
@@ -19,6 +44,7 @@ public:
 
     void set(string name, expr* expression);
     expr* get(string name);
+    void print();
 };
 
 env::env()
@@ -43,28 +69,20 @@ expr* env::get(string name)
 {
     return m_env[name];
 }
-/**********************************************************/
-/**/
-/**********************************************************/
-class expr
-{
-private:
-    /* data */
-public:
-    expr(/* args */);
-    ~expr();
 
-    virtual expr* reduce(env *) = 0;
-    virtual bool  reduceable() = 0;
-    virtual void  to_s() = 0;
-};
-
-expr::expr(/* args */)
+void env::print()
 {
-}
+    map<string, expr*> :: iterator it ;
 
-expr::~expr()
-{
+    cout << "{";
+    for(it = m_env.begin() ; it != m_env.end() ; it++)
+    {
+        cout << "(" ;
+        cout << it->first << "=";
+        ((expr*)it->second)->to_s();
+        cout << ")" ;
+    }
+    cout << "}" << endl;
 }
 
 /**********************************************************/
