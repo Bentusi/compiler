@@ -3,31 +3,77 @@
 /**********************************************************/
 /**/
 /**********************************************************/
-class type
+class expr
 {
 private:
     /* data */
 public:
-    type(/* args */);
-    ~type();
+    expr(/* args */);
+    ~expr();
 
-    virtual type* reduce() = 0;
+    virtual expr* reduce() = 0;
     virtual bool  reduceable() = 0;
     virtual void  string() = 0;
 };
 
-type::type(/* args */)
+expr::expr(/* args */)
 {
 }
 
-type::~type()
+expr::~expr()
 {
 }
 
 /**********************************************************/
 /**/
 /**********************************************************/
-class num : public type
+class boolean : public expr
+{
+private:
+    bool m_value;
+    /* data */
+public:
+    boolean(bool init);
+    ~boolean();
+    expr* reduce();
+    bool  reduceable();
+    void  string();
+    int   value();
+};
+
+boolean::boolean(bool init)
+{
+    m_value = init;
+}
+
+boolean::~boolean()
+{
+}
+
+void boolean::string()
+{
+    printf("(%s)", m_value ? "True":"False");
+}
+
+expr* boolean::reduce()
+{
+    return this;
+}
+
+bool boolean::reduceable()
+{
+    return false;
+}
+
+int boolean::value()
+{
+    return m_value;
+}
+
+/**********************************************************/
+/**/
+/**********************************************************/
+class num : public expr
 {
 private:
     int m_value;
@@ -35,7 +81,7 @@ private:
 public:
     num(int init);
     ~num();
-    type* reduce();
+    expr* reduce();
     bool  reduceable();
     void  string();
     int   value();
@@ -55,7 +101,7 @@ void num::string()
     printf("(%d)", m_value);
 }
 
-type* num::reduce()
+expr* num::reduce()
 {
     return this;
 }
@@ -73,20 +119,20 @@ int num::value()
 /**********************************************************/
 /**/
 /**********************************************************/
-class add : public type
+class add : public expr
 {
 private:
-    type* m_left;
-    type* m_right;
+    expr* m_left;
+    expr* m_right;
 public:
-    add(type* left, type* right);
+    add(expr* left, expr* right);
     ~add();
-    type* reduce();
+    expr* reduce();
     bool  reduceable();
     void  string();
 };
 
-add::add(type* left, type* right)
+add::add(expr* left, expr* right)
 {
     m_left  = left;
     m_right = right;
@@ -105,7 +151,7 @@ void add::string()
     printf(")");
 }
 
-type* add::reduce()
+expr* add::reduce()
 {
     if (m_left->reduceable())
     {
@@ -129,20 +175,76 @@ bool add::reduceable()
 /**********************************************************/
 /**/
 /**********************************************************/
-class mul : public type
+class lt : public expr
 {
 private:
-    type* m_left;
-    type* m_right;
+    expr* m_left;
+    expr* m_right;
 public:
-    mul(type* left, type* right);
-    ~mul();
-    type* reduce();
+    lt(expr* left, expr* right);
+    ~lt();
+    expr* reduce();
     bool  reduceable();
     void  string();
 };
 
-mul::mul(type* left, type* right)
+lt::lt(expr* left, expr* right)
+{
+    m_left  = left;
+    m_right = right;
+}
+
+lt::~lt()
+{
+}
+
+void lt::string()
+{
+    printf("(");
+    m_left->string();
+    printf(" < ");
+    m_right->string();
+    printf(")");
+}
+
+expr* lt::reduce()
+{
+    if (m_left->reduceable())
+    {
+        return new lt(m_left->reduce(), m_right);
+    }
+    else if (m_right->reduceable())
+    {
+        return new lt(m_left, m_right->reduce());
+    }
+    else
+    {
+        return new boolean(((num*)m_left)->value() < ((num*)m_right)->value());
+    }
+}
+
+bool lt::reduceable()
+{
+    return true;
+}
+
+/**********************************************************/
+/**/
+/**********************************************************/
+class mul : public expr
+{
+private:
+    expr* m_left;
+    expr* m_right;
+public:
+    mul(expr* left, expr* right);
+    ~mul();
+    expr* reduce();
+    bool  reduceable();
+    void  string();
+};
+
+mul::mul(expr* left, expr* right)
 {
     m_left  = left;
     m_right = right;
@@ -161,7 +263,7 @@ void mul::string()
     printf(")");
 }
 
-type* mul::reduce()
+expr* mul::reduce()
 {
     if (m_left->reduceable())
     {
@@ -188,20 +290,20 @@ bool mul::reduceable()
 class mathine
 {
 private:
-    type* m_pc;
+    expr* m_pc;
 public:
     mathine();
     ~mathine();
 
-    void run(type* pc);
-    void step(type* pc);
+    void run(expr* pc);
+    void step(expr* pc);
 };
 
 mathine::mathine()
 {
 }
 
-void mathine::run(type* pc)
+void mathine::run(expr* pc)
 {
     pc->string();
     printf("\n");
@@ -213,7 +315,7 @@ void mathine::run(type* pc)
     }
 }
 
-void mathine::step(type* pc)
+void mathine::step(expr* pc)
 {
     if (pc->reduceable())
     {
