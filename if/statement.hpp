@@ -40,7 +40,7 @@ bool  donothing::reduceable()
 
 void  donothing::to_s()
 {
-    cout << "DoNothing";
+    cout << "do-nothing";
 }
 
 
@@ -136,6 +136,71 @@ void  assign::to_s()
     cout << "(" << m_name << " = ";
     m_expr->to_s();
     cout << ")";
+}
+
+
+/**********************************************************/
+/**/
+/**********************************************************/
+class IF : public expr
+{
+private:
+    expr* m_con;
+    expr* m_t;
+    expr* m_f;
+public:
+    IF(expr* con, expr* t, expr* f);
+    ~IF();
+
+    expr* reduce(env* e);
+    bool  reduceable();
+    void  to_s();
+};
+
+IF::IF(expr* con, expr* t, expr* f)
+{
+    m_con = con;
+    m_t = t;
+    m_f = f;
+}
+
+IF::~IF()
+{
+}
+
+expr* IF::reduce(env* e)
+{
+    if (m_con->reduceable())
+    {
+        return new IF(m_con->reduce(e), m_t, m_f);
+    }
+    else
+    {
+        if (((boolean*)m_con)->value())
+        {
+            return m_t;
+        }
+        else
+        {
+            return m_f;
+        }
+    }
+}
+
+bool IF::reduceable()
+{
+    return true;
+}
+
+void IF::to_s()
+{
+    cout << "IF (";
+    m_con->to_s();
+    cout << ") THEN ";
+    m_t->to_s();
+    cout << " ELSE ";
+    m_f->to_s();
+    cout << " END";
 }
 
 #endif
