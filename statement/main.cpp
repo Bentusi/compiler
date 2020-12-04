@@ -19,7 +19,6 @@ int main(int argc, char const *argv[])
     env*  e = new env();
     e->set("p", new num(2));
     e->set("q", new num(3));
-    e->print();
     
     expr* p = new var("p");
     expr* q = new var("q");

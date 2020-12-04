@@ -78,11 +78,11 @@ void env::print()
     for(it = m_env.begin() ; it != m_env.end() ; it++)
     {
         cout << "(" ;
-        cout << it->first << "=";
+        cout << it->first << " = ";
         ((expr*)it->second)->to_s();
         cout << ")" ;
     }
-    cout << "}" << endl;
+    cout << "}";
 }
 
 /**********************************************************/
@@ -159,7 +159,7 @@ num::~num()
 
 void num::to_s()
 {
-    cout << m_value;
+    cout << "(" << m_value << ")";
 }
 
 expr* num::reduce(env* e)
@@ -368,11 +368,13 @@ mathine::mathine()
 void mathine::run(expr* pc, env* e)
 {
     pc->to_s();
+    e->print();
     cout << endl;
     while (pc->reduceable())
     {
         pc = pc->reduce(e);
         pc->to_s();
+        e->print();
         cout << endl;
     }
 }
@@ -384,5 +386,6 @@ void mathine::step(expr* pc, env* e)
         pc = pc->reduce(e);
     }
     pc->to_s();
+    e->print();
     cout << endl;
 }
