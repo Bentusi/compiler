@@ -52,7 +52,7 @@ bool  assign::reduceable()
 
 void  assign::to_s()
 {
-    cout << "(" << m_name << "=";
+    cout << "(" << m_name << " = ";
     m_expr->to_s();
     cout << ")";
 }

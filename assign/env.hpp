@@ -48,6 +48,7 @@ expr* env::get(string name)
 {
     if (m_env[name] == NULL)
     {
+        /* 临时处理 */
         return m_env[name] = new num(0);
     }
     else
