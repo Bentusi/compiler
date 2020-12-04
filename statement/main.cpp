@@ -1,6 +1,8 @@
 
 #include <iostream>
-#include "variable.hpp"
+#include "assign.hpp"
+#include "env.hpp"
+#include "vm.hpp"
 
 using namespace std;
 
@@ -17,13 +19,15 @@ int main(int argc, char const *argv[])
     // expr* l = new lt(a, k);
     // vm->run(l);
     env*  e = new env();
-    e->set("p", new num(2));
-    e->set("q", new num(3));
+    // e->set("p", new num(2));
+    // e->set("q", new num(3));
     
     expr* p = new var("p");
     expr* q = new var("q");
     expr* k = new mul(p, q);
-    vm->run(k, e);
+
+    expr* m = new assign("x", k);
+    vm->run(m, e);
 
     return 0;
 }

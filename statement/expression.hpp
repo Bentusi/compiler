@@ -1,11 +1,13 @@
+#ifndef __EXPRESSION_HPP__
+#define __EXPRESSION_HPP__
 
 #include <string>
 #include <iostream>
 #include <map>
 
 using namespace std;
-class env;
 
+class env;
 /**********************************************************/
 /**/
 /**********************************************************/
@@ -28,61 +30,6 @@ expr::expr(/* args */)
 
 expr::~expr()
 {
-}
-
-/**********************************************************/
-/**/
-/**********************************************************/
-class env
-{
-private:
-    map<string, expr*> m_env;
-public:
-    env();
-    env(string name, expr* expression);
-    ~env();
-
-    void set(string name, expr* expression);
-    expr* get(string name);
-    void print();
-};
-
-env::env()
-{
-}
-
-env::env(string name, expr* expression)
-{
-    m_env[name] = expression;
-}
-
-env::~env()
-{
-}
-
-void env::set(string name, expr* expression)
-{
-    m_env[name] = expression;
-}
-
-expr* env::get(string name)
-{
-    return m_env[name];
-}
-
-void env::print()
-{
-    map<string, expr*> :: iterator it ;
-
-    cout << "{";
-    for(it = m_env.begin() ; it != m_env.end() ; it++)
-    {
-        cout << "(" ;
-        cout << it->first << " = ";
-        ((expr*)it->second)->to_s();
-        cout << ")" ;
-    }
-    cout << "}";
 }
 
 /**********************************************************/
@@ -159,7 +106,7 @@ num::~num()
 
 void num::to_s()
 {
-    cout << "(" << m_value << ")";
+    cout << m_value;
 }
 
 expr* num::reduce(env* e)
@@ -345,47 +292,4 @@ bool mul::reduceable()
     return true;
 }
 
-/**********************************************************/
-/**/
-/**********************************************************/
-class mathine
-{
-private:
-    expr* m_pc;
-    env*  m_env;
-public:
-    mathine();
-    ~mathine();
-
-    void run(expr* pc, env* e);
-    void step(expr* pc, env* e);
-};
-
-mathine::mathine()
-{
-}
-
-void mathine::run(expr* pc, env* e)
-{
-    pc->to_s();
-    e->print();
-    cout << endl;
-    while (pc->reduceable())
-    {
-        pc = pc->reduce(e);
-        pc->to_s();
-        e->print();
-        cout << endl;
-    }
-}
-
-void mathine::step(expr* pc, env* e)
-{
-    if (pc->reduceable())
-    {
-        pc = pc->reduce(e);
-    }
-    pc->to_s();
-    e->print();
-    cout << endl;
-}
+#endif

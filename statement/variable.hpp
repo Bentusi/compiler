@@ -1,7 +1,10 @@
+#ifndef __VARIABLE_HPP__
+#define __VARIABLE_HPP__
+
 #include "expression.hpp"
 #include <string>
 #include <iostream>
-
+#include "env.hpp"
 using namespace std;
 
 
@@ -41,7 +44,7 @@ bool  var::reduceable()
 
 void  var::to_s()
 {
-    cout << "(" << m_name << ")";
+    cout << m_name;
 }
 
-
+#endif

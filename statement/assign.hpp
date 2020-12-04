@@ -1,5 +1,7 @@
+#ifndef __ASSIGN_HPP__
+#define __ASSIGN_HPP__
 
-#include "expression.hpp"
+#include "statement.hpp"
 #include <string>
 #include <iostream>
 
@@ -9,6 +11,7 @@ class assign : public expr
 {
 private:
     string m_name;
+    expr*  m_expr;
     /* data */
 public:
     assign(string name, expr* exp);
@@ -22,6 +25,7 @@ public:
 assign::assign(string name, expr* exp)
 {
     m_name = name;
+    m_expr = exp;
 }
 
 assign::~assign()
@@ -30,7 +34,15 @@ assign::~assign()
 
 expr* assign::reduce(env* e)
 {
-    return e->get(m_name);
+    if (m_expr->reduceable())
+    {
+        return new assign(m_name, m_expr->reduce(e));
+    }
+    else
+    {
+        e->set(m_name, m_expr);
+        return new donothing();
+    }
 }
 
 bool  assign::reduceable()
@@ -40,6 +52,9 @@ bool  assign::reduceable()
 
 void  assign::to_s()
 {
-    cout << "(" << m_name;
+    cout << "(" << m_name << "=";
+    m_expr->to_s();
     cout << ")";
 }
+
+#endif
