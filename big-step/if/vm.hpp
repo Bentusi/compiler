@@ -34,7 +34,7 @@ void mathine::run(expr* pc, env* e)
     {
         pc = pc->reduce(e);
         pc->to_s();
-        cout << ",";
+        cout << ", ";
         e->print();
         cout << endl;
     }
@@ -47,7 +47,7 @@ void mathine::step(expr* pc, env* e)
         pc = pc->reduce(e);
     }
     pc->to_s();
-    cout << ",";
+    cout << ", ";
     e->print();
     cout << endl;
 }

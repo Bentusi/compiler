@@ -133,9 +133,8 @@ bool  assign::reduceable()
 
 void  assign::to_s()
 {
-    cout << "(" << m_name << " = ";
+    cout << m_name << " = ";
     m_expr->to_s();
-    cout << ")";
 }
 
 
@@ -250,11 +249,9 @@ bool SEQ::reduceable()
 
 void SEQ::to_s()
 {
-    cout << "(";
     m_f->to_s();
     cout << "; ";
     m_s->to_s();
-    cout << ")";
 }
 
 /**********************************************************/
