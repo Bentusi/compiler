@@ -20,12 +20,12 @@ Num.__index = Num
 function Num:new(init)
     local self = Expr:new()
     setmetatable(self, Num)
-    self.value = init
+    self.v = init
     return self
 end
 
 function Num:to_s()
-    return string.format("%s", self.value)
+    return string.format("%s", self.v)
 end
 
 function Num:reduceable()
@@ -34,6 +34,10 @@ end
 
 function Num:reduce()
     return self
+end
+
+function Num:value()
+    return self.v
 end
 
 -- ============================================================================
@@ -45,12 +49,12 @@ Bool.__index = Bool
 function Bool:new(init)
     local self = Expr:new()
     setmetatable(self, Bool)
-    self.value = init
+    self.v = init
     return self
 end
 
 function Bool:to_s()
-    return string.format("%s", self.value)
+    return string.format("%s", self.v)
 end
 
 function Bool:reduceable()
@@ -59,6 +63,10 @@ end
 
 function Bool:reduce()
     return self
+end
+
+function Bool:value()
+    return self.v
 end
 
 -- ============================================================================
@@ -89,7 +97,7 @@ function Add:reduce()
     elseif self.r:reduceable() then
         return Add:new(self.l, self.r:reduce())
     else
-        return Num:new(self.l.value + self.r.value)
+        return Num:new(self.l:value() + self.r:value())
     end
 end
 
@@ -121,7 +129,7 @@ function Mns:reduce()
     elseif self.r:reduceable() then
         return Mns:new(self.l, self.r:reduce())
     else
-        return Num:new(self.l.value - self.r.value)
+        return Num:new(self.l:value() - self.r:value())
     end
 end
 
@@ -153,7 +161,7 @@ function Mult:reduce()
     elseif self.r:reduceable() then
         return Mult:new(self.l, self.r:reduce())
     else
-        return Num:new(self.l.value * self.r.value)
+        return Num:new(self.l:value() * self.r:value())
     end
 end
 
@@ -185,7 +193,7 @@ function Div:reduce()
     elseif self.r:reduceable() then
         return Div:new(self.l, self.r:reduce())
     else
-        return Num:new(self.l.value / self.r.value)
+        return Num:new(self.l:value() / self.r:value())
     end
 end
 
@@ -217,7 +225,7 @@ function Lt:reduce()
     elseif self.r:reduceable() then
         return Lt:new(self.l, self.r:reduce())
     else
-        return Bool:new(self.l.value < self.r.value)
+        return Bool:new(self.l:value() < self.r:value())
     end
 end
 
@@ -249,7 +257,7 @@ function Le:reduce()
     elseif self.r:reduceable() then
         return Le:new(self.l, self.r:reduce())
     else
-        return Bool:new(self.l.value <= self.r.value)
+        return Bool:new(self.l:value() <= self.r:value())
     end
 end
 
@@ -281,7 +289,7 @@ function Gt:reduce()
     elseif self.r:reduceable() then
         return Gt:new(self.l, self.r:reduce())
     else
-        return Bool:new(self.l.value > self.r.value)
+        return Bool:new(self.l:value() > self.r:value())
     end
 end
 
@@ -313,7 +321,7 @@ function Ge:reduce()
     elseif self.r:reduceable() then
         return Ge:new(self.l, self.r:reduce())
     else
-        return Bool:new(self.l.value > self.r.value)
+        return Bool:new(self.l:value() > self.r:value())
     end
 end
 
@@ -345,7 +353,7 @@ function Eq:reduce()
     elseif self.r:reduceable() then
         return Eq:new(self.l, self.r:reduce())
     else
-        return Bool:new(self.l.value == self.r.value)
+        return Bool:new(self.l:value() == self.r:value())
     end
 end
 
@@ -374,6 +382,31 @@ function Null:reduce()
 end
 
 -- ============================================================================
+-- Var
+-- ============================================================================
+Var = {}
+setmetatable(Var, Expr)
+Var.__index = Var
+function Var:new(name)
+    local self = Expr:new()
+	setmetatable(self, Var)
+    self.n = name or ""
+    return self
+end
+
+function Var:to_s()
+    return self.n
+end
+
+function Var:reduceable()
+    return true
+end
+
+function Var:reduce(env)
+    return env[self.n]
+end
+
+-- ============================================================================
 -- Asgn
 -- ============================================================================
 Asgn = {}
@@ -388,7 +421,7 @@ function Asgn:new(name, expr)
 end
 
 function Asgn:to_s()
-    return "(" .. self.n .. "=" .. self.v .. ")"
+    return "(" .. self.n .. "=" .. self.expr:to_s() .. ")"
 end
 
 function Asgn:reduceable()
@@ -397,9 +430,104 @@ end
 
 function Asgn:reduce(env)
     if self.expr:reduceable() then
-        return Asgn:new(self.name, self.expr:reduce())
+        return Asgn:new(self.var, self.expr:reduce())
     else
-        env[self.name] = self.v.value
+        env[self.n] = self.expr
+        return Null:new()
+    end
+end
+
+-- ============================================================================
+-- If
+-- ============================================================================
+If = {}
+setmetatable(If, Expr)
+If.__index = If
+function If:new(cond, t, f)
+    local self = Expr:new()
+	setmetatable(self, If)
+    self.c = cond or Null:new()
+    self.t = t or Null:new()
+    self.f = f or Null:new()
+    return self
+end
+
+function If:to_s()
+    return "IF " .. self.c:to_s() .. " THEN " .. self.t:to_s() .. " ELSE " .. self.f:to_s()
+end
+
+function If:reduceable()
+    return true
+end
+
+function If:reduce(env)
+    if self.c:reduceable() then
+        return If:new(self.c:reduce(env), self.t, self.f)
+    else
+        if self.c:value() == true then
+            return self.t
+        else
+            return self.f
+        end
+    end
+end
+
+-- ============================================================================
+-- Con
+-- ============================================================================
+Con = {}
+setmetatable(Con, Expr)
+Con.__index = Con
+function Con:new(f, s)
+    local self = Expr:new()
+	setmetatable(self, Con)
+    self.f = f or Null:new()
+    self.s = s or Null:new()
+    return self
+end
+
+function Con:to_s()
+    return self.f:to_s() .. ";" .. self.s:to_s()
+end
+
+function Con:reduceable()
+    return true
+end
+
+function Con:reduce(env)
+    if self.f:reduceable() then
+        return Con:new(self.f:reduce(env), self.s)
+    else
+        return self.s
+    end
+end
+
+-- ============================================================================
+-- While
+-- ============================================================================
+While = {}
+setmetatable(While, Expr)
+While.__index = While
+function While:new(cond, body)
+    local self = Expr:new()
+	setmetatable(self, While)
+    self.c = cond or Null:new()
+    self.b = body or Null:new()
+    return self
+end
+
+function While:to_s()
+    return "WHILE " .. self.c:to_s() .. " THEN " .. self.b:to_s() .. " END"
+end
+
+function While:reduceable()
+    return true
+end
+
+function While:reduce(env)
+    if self.c:reduceable() then
+        return If:new(self.c, Con:new(self.b, self), Null:new())
+    else
         return Null:new()
     end
 end
@@ -433,11 +561,10 @@ function main()
     -- VM(d)
 
     local env = {}
-    env["x"] = Num:new(1)
 
-    local b = Eq:new(
-        Num:new(2.0),
-        Add:new(Num:new(2), Num:new(3)))
+    local b = 
+    While:new( Lt:new(Var:new("x"), Num:new(4.0)),
+            Asgn:new("x", Add:new(Var:new("x"), Num:new(1.0))))
     VM(b, env)
 end
 
