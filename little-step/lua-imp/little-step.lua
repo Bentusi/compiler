@@ -32,7 +32,7 @@ function Num:reduceable()
     return false
 end
 
-function Num:reduce()
+function Num:reduce(env)
     return self
 end
 
@@ -61,7 +61,7 @@ function Bool:reduceable()
     return false
 end
 
-function Bool:reduce()
+function Bool:reduce(env)
     return self
 end
 
@@ -91,11 +91,11 @@ function Add:reduceable()
     return true
 end
 
-function Add:reduce()
+function Add:reduce(env)
     if self.l:reduceable() then
-        return Add:new(self.l:reduce(), self.r)
+        return Add:new(self.l:reduce(env), self.r)
     elseif self.r:reduceable() then
-        return Add:new(self.l, self.r:reduce())
+        return Add:new(self.l, self.r:reduce(env))
     else
         return Num:new(self.l:value() + self.r:value())
     end
@@ -123,11 +123,11 @@ function Mns:reduceable()
     return true
 end
 
-function Mns:reduce()
+function Mns:reduce(env)
     if self.l:reduceable() then
-        return Mns:new(self.l:reduce(), self.r)
+        return Mns:new(self.l:reduce(env), self.r)
     elseif self.r:reduceable() then
-        return Mns:new(self.l, self.r:reduce())
+        return Mns:new(self.l, self.r:reduce(env))
     else
         return Num:new(self.l:value() - self.r:value())
     end
@@ -155,11 +155,11 @@ function Mult:reduceable()
     return true
 end
 
-function Mult:reduce()
+function Mult:reduce(env)
     if self.l:reduceable() then
-        return Mult:new(self.l:reduce(), self.r)
+        return Mult:new(self.l:reduce(env), self.r)
     elseif self.r:reduceable() then
-        return Mult:new(self.l, self.r:reduce())
+        return Mult:new(self.l, self.r:reduce(env))
     else
         return Num:new(self.l:value() * self.r:value())
     end
@@ -187,11 +187,11 @@ function Div:reduceable()
     return true
 end
 
-function Div:reduce()
+function Div:reduce(env)
     if self.l:reduceable() then
-        return Div:new(self.l:reduce(), self.r)
+        return Div:new(self.l:reduce(env), self.r)
     elseif self.r:reduceable() then
-        return Div:new(self.l, self.r:reduce())
+        return Div:new(self.l, self.r:reduce(env))
     else
         return Num:new(self.l:value() / self.r:value())
     end
@@ -219,11 +219,11 @@ function Lt:reduceable()
     return true
 end
 
-function Lt:reduce()
+function Lt:reduce(env)
     if self.l:reduceable() then
-        return Lt:new(self.l:reduce(), self.r)
+        return Lt:new(self.l:reduce(env), self.r)
     elseif self.r:reduceable() then
-        return Lt:new(self.l, self.r:reduce())
+        return Lt:new(self.l, self.r:reduce(env))
     else
         return Bool:new(self.l:value() < self.r:value())
     end
@@ -251,11 +251,11 @@ function Le:reduceable()
     return true
 end
 
-function Le:reduce()
+function Le:reduce(env)
     if self.l:reduceable() then
-        return Le:new(self.l:reduce(), self.r)
+        return Le:new(self.l:reduce(env), self.r)
     elseif self.r:reduceable() then
-        return Le:new(self.l, self.r:reduce())
+        return Le:new(self.l, self.r:reduce(env))
     else
         return Bool:new(self.l:value() <= self.r:value())
     end
@@ -283,11 +283,11 @@ function Gt:reduceable()
     return true
 end
 
-function Gt:reduce()
+function Gt:reduce(env)
     if self.l:reduceable() then
-        return Gt:new(self.l:reduce(), self.r)
+        return Gt:new(self.l:reduce(env), self.r)
     elseif self.r:reduceable() then
-        return Gt:new(self.l, self.r:reduce())
+        return Gt:new(self.l, self.r:reduce(env))
     else
         return Bool:new(self.l:value() > self.r:value())
     end
@@ -315,11 +315,11 @@ function Ge:reduceable()
     return true
 end
 
-function Ge:reduce()
+function Ge:reduce(env)
     if self.l:reduceable() then
-        return Ge:new(self.l:reduce(), self.r)
+        return Ge:new(self.l:reduce(env), self.r)
     elseif self.r:reduceable() then
-        return Ge:new(self.l, self.r:reduce())
+        return Ge:new(self.l, self.r:reduce(env))
     else
         return Bool:new(self.l:value() > self.r:value())
     end
@@ -347,11 +347,11 @@ function Eq:reduceable()
     return true
 end
 
-function Eq:reduce()
+function Eq:reduce(env)
     if self.l:reduceable() then
-        return Eq:new(self.l:reduce(), self.r)
+        return Eq:new(self.l:reduce(env), self.r)
     elseif self.r:reduceable() then
-        return Eq:new(self.l, self.r:reduce())
+        return Eq:new(self.l, self.r:reduce(env))
     else
         return Bool:new(self.l:value() == self.r:value())
     end
@@ -377,7 +377,7 @@ function Null:reduceable()
     return false
 end
 
-function Null:reduce()
+function Null:reduce(env)
     return self
 end
 
@@ -416,7 +416,7 @@ function Asgn:new(name, expr)
     local self = Expr:new()
 	setmetatable(self, Asgn)
     self.n = name or ""
-    self.expr = expr or Null:new()
+    self.expr = expr or Num:new(0)
     return self
 end
 
@@ -430,7 +430,7 @@ end
 
 function Asgn:reduce(env)
     if self.expr:reduceable() then
-        return Asgn:new(self.var, self.expr:reduce())
+        return Asgn:new(self.n, self.expr:reduce(env))
     else
         env[self.n] = self.expr
         return Null:new()
@@ -561,12 +561,13 @@ function main()
     -- VM(d)
 
     local env = {}
+    env["x"] = Num:new(0)
 
     local b = 
     While:new( Lt:new(Var:new("x"), Num:new(4.0)),
             Asgn:new("x", Add:new(Var:new("x"), Num:new(1.0))))
+
     VM(b, env)
 end
 
-main()
 main()
