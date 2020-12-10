@@ -28,6 +28,10 @@ function Num:value()
     return self.v
 end
 
+function Num:eval(env)
+    return self
+end
+
 -- ============================================================================
 -- Bool
 -- ============================================================================
@@ -54,6 +58,10 @@ end
 
 function Bool:value()
     return self.v
+end
+
+function Bool:eval(env)
+    return self
 end
 
 -- ============================================================================
@@ -87,6 +95,10 @@ function Add:reduce(env)
     end
 end
 
+function Add:eval(env)
+    return Num:new(self.l:eval(env):value() + self.r:eval(env):value())
+end
+
 -- ============================================================================
 -- Mns
 -- ============================================================================
@@ -116,6 +128,10 @@ function Mns:reduce(env)
     else
         return Num:new(self.l:value() - self.r:value())
     end
+end
+
+function Mns:eval(env)
+    return Num:new(self.l:eval(env):value() - self.r:eval(env):value())
 end
 
 -- ============================================================================
@@ -150,6 +166,10 @@ function Mult:reduce(env)
     end
 end
 
+function Mult:eval(env)
+    return Num:new(self.l:eval(env):value() * self.r:eval(env):value())
+end
+
 -- ============================================================================
 -- Div
 -- ============================================================================
@@ -182,6 +202,10 @@ function Div:reduce(env)
     end
 end
 
+function Div:eval(env)
+    return Num:new(self.l:eval(env):value() / self.r:eval(env):value())
+end
+
 -- ============================================================================
 -- Lt
 -- ============================================================================
@@ -211,6 +235,10 @@ function Lt:reduce(env)
     else
         return Bool:new(self.l:value() < self.r:value())
     end
+end
+
+function Lt:eval(env)
+    return Bool:new(self.l:eval(env):value() < self.r:eval(env):value())
 end
 
 -- ============================================================================
@@ -245,6 +273,10 @@ function Le:reduce(env)
     end
 end
 
+function Le:eval(env)
+    return Bool:new(self.l:eval(env):value() <= self.r:eval(env):value())
+end
+
 -- ============================================================================
 -- Gt
 -- ============================================================================
@@ -276,6 +308,10 @@ function Gt:reduce(env)
     end
 end
 
+function Gt:eval(env)
+    return Bool:new(self.l:eval(env):value() > self.r:eval(env):value())
+end
+
 -- ============================================================================
 -- Ge
 -- ============================================================================
@@ -303,8 +339,12 @@ function Ge:reduce(env)
     elseif self.r:reduceable() then
         return Ge:new(self.l, self.r:reduce(env))
     else
-        return Bool:new(self.l:value() > self.r:value())
+        return Bool:new(self.l:value() >= self.r:value())
     end
+end
+
+function Ge:eval(env)
+    return Bool:new(self.l:eval(env):value() >= self.r:eval(env):value())
 end
 
 -- ============================================================================
@@ -338,6 +378,10 @@ function Eq:reduce(env)
     end
 end
 
+function Eq:eval(env)
+    return Bool:new(self.l:eval(env):value() == self.r:eval(env):value())
+end
+
 -- ============================================================================
 -- Null
 -- ============================================================================
@@ -361,6 +405,9 @@ function Null:reduce(env)
     return self
 end
 
+function Null:eval(env)
+end
+
 -- ============================================================================
 -- Var
 -- ============================================================================
@@ -382,6 +429,10 @@ function Var:reduceable()
 end
 
 function Var:reduce(env)
+    return env[self.n]
+end
+
+function Var:eval(env)
     return env[self.n]
 end
 
@@ -413,6 +464,10 @@ function Asgn:reduce(env)
         env[self.n] = self.expr
         return Null:new()
     end
+end
+
+function Asgn:eval(env)
+    env[self.n] = self.expr:eval(env)
 end
 
 -- ============================================================================
@@ -449,6 +504,14 @@ function If:reduce(env)
     end
 end
 
+function If:eval(env)
+    if self.c:eval(env):value() then
+        return self.t:eval(env)
+    else
+        return self.f:eval(env)
+    end
+end
+
 -- ============================================================================
 -- Con
 -- ============================================================================
@@ -476,6 +539,11 @@ function Con:reduce(env)
     else
         return self.s
     end
+end
+
+function Con:eval(env)
+    self.f:eval(env)
+    return self.s:eval(env)
 end
 
 -- ============================================================================
@@ -507,6 +575,13 @@ function While:reduce(env)
     end
 end
 
+function While:eval(env)
+    if self.c:eval(env):value() then
+        self.b:eval(env)
+        self:eval(env)
+    end
+end
+
 -- ============================================================================
 -- 
 -- ============================================================================
@@ -526,23 +601,35 @@ function VM(expr, env)
     end
 end
 
+function EVAL(expr, env)
+    expr:eval(env)
+    print(PrintEnv(env))
+end
+
 -- ============================================================================
 -- 
 -- ============================================================================
 function main()
-    -- local d = Div:new(
-    --     Num:new(2.1),
-    --     Add:new(Num:new(0), Num:new(0)))
-    -- VM(d)
-
     local env = {}
+
     env["x"] = Num:new(0)
+    local d = Add:new(
+        Num:new(2.1),
+        Add:new(Num:new(4), Num:new(0)))
+    EVAL(d, env)
 
     local b = 
     While:new( Lt:new(Var:new("x"), Num:new(4.0)),
             Asgn:new("x", Add:new(Var:new("x"), Num:new(1.0))))
 
-    VM(b, env)
+    EVAL(b, env)
+
+    local c = 
+    If:new( Lt:new(Var:new("x"), Num:new(4.0)),
+            Asgn:new("x", Add:new(Var:new("x"), Num:new(2.0))),
+            Asgn:new("x", Add:new(Var:new("x"), Num:new(4.0))))
+
+    EVAL(c, env)
 end
 
 main()
