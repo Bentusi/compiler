@@ -1,25 +1,13 @@
 #! /usr/local/bin/lua
 
 -- ============================================================================
--- Expr
--- ============================================================================
-Expr = {}
-function Expr:new()
-	local self = {}
-	setmetatable(self, Expr)
-	self.__index = self
-	return self
-end
-
--- ============================================================================
 -- Num
 -- ============================================================================
 Num = {}
-setmetatable(Num, Expr)
-Num.__index = Num
 function Num:new(init)
-    local self = Expr:new()
+    local self = {}
     setmetatable(self, Num)
+    Num.__index = Num
     self.v = init
     return self
 end
@@ -44,11 +32,10 @@ end
 -- Bool
 -- ============================================================================
 Bool = {}
-setmetatable(Bool, Expr)
-Bool.__index = Bool
 function Bool:new(init)
-    local self = Expr:new()
+    local self = {}
     setmetatable(self, Bool)
+    Bool.__index = Bool
     self.v = init
     return self
 end
@@ -73,11 +60,10 @@ end
 -- Add
 -- ============================================================================
 Add = {}
-setmetatable(Add, Expr)
-Add.__index = Add
 function Add:new(left, right)
-    local self = Expr:new()
+    local self = {}
 	setmetatable(self, Add)
+    Add.__index = Add
     self.l = left
     self.r = right
     return self
@@ -105,11 +91,10 @@ end
 -- Mns
 -- ============================================================================
 Mns = {}
-setmetatable(Mns, Expr)
-Mns.__index = Mns
 function Mns:new(left, right)
-    local self = Expr:new()
-	setmetatable(self, Mns)
+    local self = {}
+    setmetatable(self, Mns)
+    Mns.__index = Mns
     self.l = left
     self.r = right
     return self
@@ -169,11 +154,11 @@ end
 -- Div
 -- ============================================================================
 Div = {}
-setmetatable(Div, Expr)
-Div.__index = Div
+
 function Div:new(left, right)
-    local self = Expr:new()
+    local self = {}
 	setmetatable(self, Div)
+    Div.__index = Div
     self.l = left
     self.r = right
     return self
@@ -201,11 +186,10 @@ end
 -- Lt
 -- ============================================================================
 Lt = {}
-setmetatable(Lt, Expr)
-Lt.__index = Lt
 function Lt:new(left, right)
-    local self = Expr:new()
+    local self = {}
 	setmetatable(self, Lt)
+    Lt.__index = Lt
     self.l = left
     self.r = right
     return self
@@ -233,11 +217,11 @@ end
 -- Le
 -- ============================================================================
 Le = {}
-setmetatable(Le, Expr)
-Le.__index = Le
+
 function Le:new(left, right)
-    local self = Expr:new()
+    local self = {}
 	setmetatable(self, Le)
+    Le.__index = Le
     self.l = left
     self.r = right
     return self
@@ -265,11 +249,10 @@ end
 -- Gt
 -- ============================================================================
 Gt = {}
-setmetatable(Gt, Expr)
-Gt.__index = Gt
 function Gt:new(left, right)
-    local self = Expr:new()
+    local self = {}
 	setmetatable(self, Gt)
+    Gt.__index = Gt
     self.l = left
     self.r = right
     return self
@@ -297,11 +280,10 @@ end
 -- Ge
 -- ============================================================================
 Ge = {}
-setmetatable(Ge, Expr)
-Ge.__index = Ge
 function Ge:new(left, right)
-    local self = Expr:new()
+    local self = {}
 	setmetatable(self, Ge)
+    Ge.__index = Ge
     self.l = left
     self.r = right
     return self
@@ -329,11 +311,10 @@ end
 -- Eq
 -- ============================================================================
 Eq = {}
-setmetatable(Eq, Expr)
-Eq.__index = Eq
 function Eq:new(left, right)
-    local self = Expr:new()
+    local self = {}
 	setmetatable(self, Eq)
+    Eq.__index = Eq
     self.l = left
     self.r = right
     return self
@@ -361,11 +342,10 @@ end
 -- Null
 -- ============================================================================
 Null = {}
-setmetatable(Null, Expr)
-Null.__index = Null
 function Null:new()
-    local self = Expr:new()
+    local self = {}
 	setmetatable(self, Null)
+    Null.__index = Null
     return self
 end
 
@@ -385,11 +365,10 @@ end
 -- Var
 -- ============================================================================
 Var = {}
-setmetatable(Var, Expr)
-Var.__index = Var
 function Var:new(name)
-    local self = Expr:new()
+    local self = {}
 	setmetatable(self, Var)
+    Var.__index = Var
     self.n = name or ""
     return self
 end
@@ -410,11 +389,10 @@ end
 -- Asgn
 -- ============================================================================
 Asgn = {}
-setmetatable(Asgn, Expr)
-Asgn.__index = Asgn
 function Asgn:new(name, expr)
-    local self = Expr:new()
+    local self = {}
 	setmetatable(self, Asgn)
+    Asgn.__index = Asgn
     self.n = name or ""
     self.expr = expr or Num:new(0)
     return self
@@ -441,11 +419,10 @@ end
 -- If
 -- ============================================================================
 If = {}
-setmetatable(If, Expr)
-If.__index = If
 function If:new(cond, t, f)
-    local self = Expr:new()
+    local self = {}
 	setmetatable(self, If)
+    If.__index = If
     self.c = cond or Null:new()
     self.t = t or Null:new()
     self.f = f or Null:new()
@@ -476,11 +453,10 @@ end
 -- Con
 -- ============================================================================
 Con = {}
-setmetatable(Con, Expr)
-Con.__index = Con
 function Con:new(f, s)
-    local self = Expr:new()
+    local self = {}
 	setmetatable(self, Con)
+    Con.__index = Con
     self.f = f or Null:new()
     self.s = s or Null:new()
     return self
@@ -506,11 +482,10 @@ end
 -- While
 -- ============================================================================
 While = {}
-setmetatable(While, Expr)
-While.__index = While
 function While:new(cond, body)
-    local self = Expr:new()
+    local self = {}
 	setmetatable(self, While)
+    While.__index = While
     self.c = cond or Null:new()
     self.b = body or Null:new()
     return self
