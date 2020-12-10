@@ -611,24 +611,31 @@ end
 -- ============================================================================
 function main()
     local env = {}
-
-    env["x"] = Num:new(0)
+ 
     local d = Add:new(
         Num:new(2.1),
         Add:new(Num:new(4), Num:new(0)))
+    env["x"] = Num:new(0)
+    VM(d, env)
+    env["x"] = Num:new(0)
     EVAL(d, env)
 
     local b = 
     While:new( Lt:new(Var:new("x"), Num:new(4.0)),
             Asgn:new("x", Add:new(Var:new("x"), Num:new(1.0))))
 
+    env["x"] = Num:new(0)
+    VM(b, env)
+    env["x"] = Num:new(0)
     EVAL(b, env)
 
     local c = 
     If:new( Lt:new(Var:new("x"), Num:new(4.0)),
             Asgn:new("x", Add:new(Var:new("x"), Num:new(2.0))),
             Asgn:new("x", Add:new(Var:new("x"), Num:new(4.0))))
-
+    env["x"] = Num:new(4)
+    VM(c, env)
+    env["x"] = Num:new(4)
     EVAL(c, env)
 end
 

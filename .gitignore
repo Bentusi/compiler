@@ -30,6 +30,4 @@
 *.exe
 *.out
 *.app
-if/main
-if/main
 *.DS_Store
