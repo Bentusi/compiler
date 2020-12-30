@@ -510,6 +510,16 @@ end
 -- ============================================================================
 -- 
 -- ============================================================================
+VM = {}
+function VM:new(statement, env)
+    local self = {}
+	setmetatable(self, VM)
+    VM.__index = VM
+    self.expr = statement
+    self.env  = env
+    return self
+end
+
 function PrintEnv(env)
     local str = "{"
     for key, value in pairs(env) do
@@ -518,14 +528,25 @@ function PrintEnv(env)
     return str .. "}"
 end
 
-function VM(expr, env)
-    print(expr:to_s() .. ", " .. PrintEnv(env))
-    while expr:reduceable() do
-        expr = expr:reduce(env)
-        print(expr:to_s() .. ", " .. PrintEnv(env))
+function VM:run()
+    local i = 0
+    print(i .. ":" .. self.expr:to_s() .. ", " .. PrintEnv(self.env))
+    while self.expr:reduceable() do
+        self.expr = self.expr:reduce(self.env)
+        i = i + 1
+        print(i .. ":" .. self.expr:to_s() .. ", " .. PrintEnv(self.env))
     end
 end
 
+function VM:step()
+    local i = 0
+    print(i .. ":" .. self.expr:to_s() .. ", " .. PrintEnv(self.env))
+    if self.expr:reduceable() then
+        self.expr = self.expr:reduce(self.env)
+        i = i + 1
+        print(i .. ":" .. self.expr:to_s() .. ", " .. PrintEnv(self.env))
+    end
+end
 -- ============================================================================
 -- 
 -- ============================================================================
@@ -542,7 +563,8 @@ function main()
     While:new( Lt:new(Var:new("x"), Num:new(4.0)),
             Asgn:new("x", Add:new(Var:new("x"), Num:new(1.0))))
 
-    VM(b, env)
+    vm = VM:new(b, env)
+    vm:run()
 end
 
 main()
